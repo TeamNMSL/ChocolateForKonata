@@ -43,8 +43,9 @@ namespace ChocolateForKonata
                     BotFunction.Hso.Hso.update(e, bot);
                 else if (commandString.ToLower() == "/c advancedcmd hso demo" && CanBeUse.test("图", e))
                     Reply = BotFunction.Hso.Hso.GetHso(e, bot, "GifDemo");
-                //else if (Util.Rand.CanIDo(0.05f) && CanBeUse.test("复读", e))
-                else
+                else if (Util.Rand.CanIDo(0.05f) && CanBeUse.test("复读", e))
+                    Reply = BotFunction.Sys.Repeat(e.Message.Chain);
+                else if (CanBeUse.test("高强度复读", e))
                     Reply = BotFunction.Sys.Repeat(e.Message.Chain);
 
                 if (Reply != null)
