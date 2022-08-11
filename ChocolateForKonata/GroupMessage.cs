@@ -45,7 +45,7 @@ namespace ChocolateForKonata
                     Reply = BotFunction.Hso.Hso.GetHso(e, bot, "GifDemo");
                 else if (Util.Rand.CanIDo(0.05f) && CanBeUse.test("复读", e))
                     Reply = BotFunction.Sys.Repeat(e.Message.Chain);
-                else if (CanBeUse.test("高强度复读", e))
+                else if (CanBeUse.test("不要高强度复读", e))
                     Reply = BotFunction.Sys.Repeat(e.Message.Chain);
 
                 if (Reply != null)

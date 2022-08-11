@@ -64,7 +64,7 @@ namespace ChocolateForKonata
         public static class Cfgs {
             public static List<ulong>BotAdmins=new List<ulong>();
             public static List<string> FunctionList = new List<string>() {
-            "复读","图","高强度复读"
+            "复读","图","不要高强度复读"
             };
             public static string imgApi = "";
         }
