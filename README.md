@@ -1,7 +1,9 @@
 # ChocolateForKonata
-HsoBot archive
+~~HsoBot archive~~
 
-Just a archive for a bot which banned by tenshit
+~~Just a archive for a bot which banned by tenshit~~( i have registed another account)
+
+Just to store my code,in case my disk get lost,I can fetch it to my another disk by then
 
 You must not download the source then build and use it,bcz there is lots of code which is abandoned
 
