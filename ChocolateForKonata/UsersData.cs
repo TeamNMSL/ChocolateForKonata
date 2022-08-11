@@ -9,5 +9,6 @@ namespace ChocolateForKonata
     public static class UsersData
     {
         static public Dictionary<string,Dictionary<string,string>> Switches=new();
+        static public List<string> HsoMsgList=new();
     }
 }

@@ -51,6 +51,7 @@ namespace ChocolateForKonata
             Path.imgPath = $"{Path.AppPath}\\Images";
             if (!Directory.Exists(Path.HsoPath))
                 Directory.CreateDirectory(Path.HsoPath);
+            Cfgs.imgApi = File.ReadAllText($"{GlobalScope.Path.AppPath}\\imgApi").Replace("\r","").Replace("\n","");
 
         }
         public static class Path {
@@ -63,8 +64,9 @@ namespace ChocolateForKonata
         public static class Cfgs {
             public static List<ulong>BotAdmins=new List<ulong>();
             public static List<string> FunctionList = new List<string>() {
-            "复读","色图"
+            "复读","图"
             };
+            public static string imgApi = "";
         }
     }
 }

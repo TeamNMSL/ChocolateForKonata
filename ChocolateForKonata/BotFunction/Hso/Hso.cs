@@ -14,11 +14,36 @@ using System.Text;
 using System.Threading.Tasks;
 using ThoughtWorks.QRCode.Codec;
 using System.Collections;
+using RestSharp;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace ChocolateForKonata.BotFunction.Hso
 {
     public static  class Hso
     {
+        static public (bool,string) imgUpload(string filePath)
+        {
+            var client = new RestClient(GlobalScope.Cfgs.imgApi);
+            var request = new RestRequest("", Method.Post);
+            client.Options.MaxTimeout = 30000;
+            request.AddFile("source", filePath);
+            var response = client.Execute(request);
+            client.Dispose();
+            request = null;
+            try
+            {
+                JObject resultJson = (JObject)JsonConvert.DeserializeObject(response.Content);
+                string url = resultJson["image"]["url"].ToString();
+                return (true, url);
+                
+            }
+            catch (Exception e)
+            {
+
+                return (false, e.Message);
+            }
+        }
         private static string GenerateQRByThoughtWorks(string content)
         {
             QRCodeEncoder encoder = new QRCodeEncoder();
@@ -45,67 +70,67 @@ namespace ChocolateForKonata.BotFunction.Hso
 
        
 
-        internal static void TencentHsoBanTest(GroupMessageEvent e, Bot bot)
-        {
-            bot.SendGroupMessage(e.GroupUin, new MessageBuilder().Text("开始循环测试"));
-            for (int i = 0; i <= 10; i++)
-            {
-                bot.SendGroupMessage(e.GroupUin, GetHso(e, bot));
-                Thread.Sleep(2000);
-            }
-            bot.SendGroupMessage(e.GroupUin, new MessageBuilder().Text("测试结束"));
-        }
+
 
         public static MessageBuilder GetHso(Konata.Core.Events.Model.GroupMessageEvent e,Bot bot,string Mode="null") {
-            if (Mode=="GifDemo")
-            {
-                string fullpath = @"D:\GeneralData\Pictures\DownloadFromPixiv\(871625)lambda\(95551392)白金燐子　gif@60ms.zip";
-                string info = "(95551392)白金燐子　gif@60ms.zip";
-                string toSend=HsoGIF(fullpath,info);
-                ImageChain chain = ImageChain.CreateFromFile(toSend);
-                if (!bot.UploadGroupImage(chain, e.GroupUin).Result)
-                    return new MessageBuilder()
-                        .Text("上传失败了x");
-                return new MessageBuilder()
-                .Image(GenerateQRByThoughtWorks(chain.ImageUrl))
-                .Text($"[GIF DEMO]");
-            }
-            else
-            {
+            
 
                 string basepath = $"{GlobalScope.Path.HsoPath}\\DownloadFromPixiv";//图库路径
                 string artistpath = Util.Rand.Random_Folders(basepath);//画师图库路径
                 string artist = artistpath.Replace(basepath + "\\", "");//图库路径下的画师相对路径,画师名
                 string Pic = Util.Rand.Random_File(artistpath);//图片绝对路径
                 string picinfo = Pic.Replace(artistpath + "\\", "");//图片绝对路径去掉画师图库路径所得到的string
+            if (Mode == "GifDemo")
+            {
+                Pic = @"D:\GeneralData\Pictures\DownloadFromPixiv\(871625)lambda\(95551392)白金燐子　gif@60ms.zip";
+                picinfo = "(95551392)白金燐子　gif@60ms.zip";
+                
+            }
+            string format=picinfo.Substring(picinfo.IndexOf("."));
                 if (Pic.EndsWith("zip"))
                 {
                     Pic = HsoGIF(Pic, picinfo);
                 }
-                ImageChain chain = ImageChain.CreateFromFile(Pic);
-                if (!bot.UploadGroupImage(chain, e.GroupUin).Result)
-                    return new MessageBuilder()
-                        .Text("上传失败了x");
-                if (Mode=="Multi")
+                var dt = DateTime.Now;
+                string fileName = $"{Convert.ToInt64((DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds)}{format}";
+                File.Copy(Pic, $"{GlobalScope.Path.TmpPath}\\{fileName}");
+                var tryUploadResult = imgUpload(Pic);
+                if (tryUploadResult.Item1)
                 {
-                    bot.SendGroupMessage(e.GroupUin, new MultiMsgChain()
-                        .AddMessage(bot.Uin,bot.Name,chain)
-                        .AddMessage(bot.Uin,bot.Name
-                        ,new MessageBuilder()
-                            .Text($"画师:{artist}\n")
-                            .Text($"文件名:{picinfo}")
-                            .Build()));
-                    return null;
+
+                    
+                    var chainToSend = new MultiMsgChain()
+                       .AddMessage(3396014855, "傻逼",
+                       new MessageBuilder()
+                       .Text($"图片来力~~~~\nURL:{tryUploadResult.Item2}\n时间不等人，请珍惜时间")
+                       .Build())
+                       .AddMessage(3396014855, "傻逼"
+                       , new MessageBuilder()
+                           .Text($"画师:{artist}\n")
+                           .Text($"文件名:{picinfo}")
+                           .Build())
+                       .AddMessage(bot.Uin, bot.Name,
+                       new MessageBuilder()
+                       .Text($"感谢AkulaKirov提供的图床QWQ")
+                       .Build());
+                string msgString = new MessageBuilder(chainToSend).Build().ToString();
+                
+                string m_fileNameWithAfter = msgString.Substring(msgString.IndexOf("m_fileName=")+ "m_fileName=".Length+1);
+                string mfn = m_fileNameWithAfter.Substring(0, m_fileNameWithAfter.IndexOf("\""));
+                
+                UsersData.HsoMsgList.Add(mfn);
+                bot.SendGroupMessage(e.GroupUin, chainToSend);
+                
+
+                return null;
                 }
                 else
                 {
                     return new MessageBuilder()
-                   .Image(GenerateQRByThoughtWorks(chain.ImageUrl))
-                   .Text($"画师:{artist}\n")
-                   .Text($"文件名:{picinfo}");
+                  .Text($"Failed to send funny picture because\n{tryUploadResult.Item2}");
                 }
                
-            }
+            
             
             
         }

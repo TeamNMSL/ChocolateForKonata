@@ -16,11 +16,14 @@ namespace ChocolateForKonata
     {
         internal static void Main(object? sender, GroupMessageEvent e, Bot bot)
         {
-            
+            Console.WriteLine(e.Chain.ToString());
             try
             {
-                if (e.MemberUin == bot.Uin)
+                if (e.MemberUin == bot.Uin)                   
+                {
+                    tryRecall(e,bot);
                     return;
+                }
                 if (e.Message == null)
                     return;
                 string commandString = e.Message.Chain.ToString();
@@ -34,17 +37,14 @@ namespace ChocolateForKonata
                     Reply = BotFunction.Sys.RestartAnotherBot();
                 else if (commandString.StartsWith("/c module "))
                     Reply = BotFunction.Sys.Switches.SwitchMain(e, bot);
-                else if (commandString == "色图来" && CanBeUse.test("色图", e))
+                else if (commandString == "图来" && CanBeUse.test("图", e))
                     Reply = BotFunction.Hso.Hso.GetHso(e, bot);
-                else if (commandString == "色图开" && CanBeUse.test("色图", e))
-                    Reply = BotFunction.Hso.Hso.GetHso(e, bot,"Multi");
                 else if (commandString == "/c hso update")
                     BotFunction.Hso.Hso.update(e, bot);
-                else if (commandString.ToLower() == "/c advancedcmd hso demo" && CanBeUse.test("色图", e))
+                else if (commandString.ToLower() == "/c advancedcmd hso demo" && CanBeUse.test("图", e))
                     Reply = BotFunction.Hso.Hso.GetHso(e, bot, "GifDemo");
-                else if (commandString == @"Task.Run(()=>{CycleHso(10,2000)});" && e.MemberUin == 1848200159)
-                    BotFunction.Hso.Hso.TencentHsoBanTest(e, bot);
-                else if (Util.Rand.CanIDo(0.05f) && CanBeUse.test("复读", e))
+                //else if (Util.Rand.CanIDo(0.05f) && CanBeUse.test("复读", e))
+                else
                     Reply = BotFunction.Sys.Repeat(e.Message.Chain);
 
                 if (Reply != null)
@@ -60,12 +60,32 @@ namespace ChocolateForKonata
             
         }
 
+        private static void tryRecall(GroupMessageEvent e, Bot bot)
+        {
+            if (e.Message.Chain[0].Type == Konata.Core.Message.Model.XmlChain.ChainType.Xml)
+            {
+                var msgString = e.Message.Chain.ToString();
+                string m_fileNameWithAfter = msgString.Substring(msgString.IndexOf("m_fileName=") + "m_fileName=".Length + 1);
+                string mfn = m_fileNameWithAfter.Substring(0, m_fileNameWithAfter.IndexOf("\""));
+                if (UsersData.HsoMsgList.Contains(mfn))
+                {
+                    
+                    UsersData.HsoMsgList.Remove(mfn);
+                    Task.Run(() => {
+                        Thread.Sleep(90000);
+                        bot.RecallMessage(e.Message);
+                    });
+                }
+            }
+            
+        }
+
         private static string CommandStandarlize(string commandString)
         {
             if (commandString == "[KQ:image,file=B407F708A2C6A506342098DF7CAC4A57,width=198,height=82,length=7746,type=1000]")
-                return "色图来";
+                return "图来";
             if (commandString == "[KQ:image,file=523F541F30A684B471EAB31695310299,width=614,height=587,length=31926,type=1000]")
-                return "色图开";
+                return "图来";
 
             return commandString;
         }
